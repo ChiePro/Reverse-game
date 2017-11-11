@@ -41,19 +41,6 @@ class RandomAI extends AI2 {
 		System.out.println(x);*/
 		BookManager book = new BookManager();
 		Vector movables = book.find(board);
-		if(movables.isEmpty())
-		{
-			// 打てる箇所がなければパスする
-			board.pass();
-			return;
-		}
-		Point p = null;
-		if(movables.size() == 1)
-		{
-			// 打てる箇所が一カ所だけなら、即座に打って返る
-			board.move((Point) movables.get(0));
-			return;
-		}
 		//Randomに打つ
 		if(movables.size() >= 2)
 		{
@@ -67,6 +54,19 @@ class RandomAI extends AI2 {
 			x = value1.nextInt(y.size());
 			System.out.println(z[x]);
 			board.move((Point)z[x]);
+			return;
+		}
+		if(movables.isEmpty())
+		{
+			// 打てる箇所がなければパスする
+			board.pass();
+			return;
+		}
+		Point p = null;
+		if(movables.size() == 1)
+		{
+			// 打てる箇所が一カ所だけなら、即座に打って返る
+			board.move((Point) movables.get(0));
 			return;
 		}
 	}

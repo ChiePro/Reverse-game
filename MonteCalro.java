@@ -21,20 +21,27 @@ class MonteCalroAI extends AI3 implements Cloneable
 			super(x, y);
 		}
 	}
+	int all_playouts = 0;
 	Disc stone[] = new Disc[60];
 	Vector can_put = new Vector();
-	int try_num = 1,all_playouts = 0;
+	int try_num = 1;//playout回数
+	int difference[] = new int[try_num];//playoutの結果(score)を保持する
 	Board state = new Board();//Boardクラスのオブジェクト作成
 	Board clone = state.clone();//Boardクラスのクローン作製
 	ConsoleBoard board = new ConsoleBoard();
+	private int currentColor;//現在の手番の色
+	Point point = new Point();
 	Disc disc = new Disc();
-	int difference[] = new int[5];
 
 	public void move(Board board)//打てる手が複数あればモンテカルロ木探索を行う
 	{
 		can_put = board.getMovablePos();
 		BookManager book = new BookManager();
 		Vector movables = book.find(board);
+		if(movables.size() >= 2)
+		{
+			board.move(select_best_move(board,can_put));
+		}
 		if(movables.isEmpty())
 		{
 			board.pass();
@@ -45,10 +52,6 @@ class MonteCalroAI extends AI3 implements Cloneable
 		{
 			board.move((Point) movables.get(0));
 			return;
-		}
-		if(movables.size() >= 2)
-		{
-			board.move(select_best_move(board,can_put));
 		}
 		return;
 	}
@@ -63,8 +66,8 @@ class MonteCalroAI extends AI3 implements Cloneable
 		int best_put = 0;
 		double best_value = -100;
 		double win_rate[] = new double[can_put2.size()];
-	/*	Vector z = board.getUpdate();
-		System.out.println(z);*/
+		Vector z = board.getUpdate();
+		System.out.println(z);
 		for(;;)
 		{
 			for(int j = 0; j < can_put2.size(); j++)
@@ -77,6 +80,7 @@ class MonteCalroAI extends AI3 implements Cloneable
 			{
 				for(int m = 0; m < try_num; m++)//プレイアウトを繰り返す
 				{
+					clone.Turns = 0;
 					win = playout(board,m,stone[i]);
 					win_sum[i] += win;
 				}
@@ -100,38 +104,48 @@ class MonteCalroAI extends AI3 implements Cloneable
 
 	public int playout(Board board, int num, Point put)//プレイアウトをランダムに行う
 	{
+
 		BookManager book = new BookManager();
 		Vector movables = book.find(clone);
 		clone.Turns = 0;
-		//System.out.print(clone.getCurrentColor());
+		//clone.CurrentColor = Disc.BLACK;
 		all_playouts++;
-		//System.out.println();
-		for(int d = 1; d < 9; d++)
+		System.out.println();
+		Board clone = state.clone();//Boardクラスのクローン作製
+		//clone.init();
+		int win = 0,number = 0;
+		for(int d = 0; d < 10; d++)
 		{
-			for(int e = 1; e < 9; e++)
+			for(int e = 0; e < 10; e++)
 			{
 				clone.RawBoard[e][d] = board.RawBoard[e][d];
 				//System.out.printf("%2d ",clone.RawBoard[e][d]);
+			/*	if(all_playouts < 10)
+				{
+					System.out.printf("%2d ",clone.RawBoard[e][d]);
+				}*/
 			}
 			//System.out.println();
 		}
-		int win = 0;
+		clone.initMovable();
+		//System.out.print("候補手 = " + clone.getMovablePos());
 		System.out.println("");
-		int number = 0;
 		System.out.print(put + ", ");
-		//clone.move(put);
-		/*while(clone.Turns == 0)
-		{
-			System.out.print("HHH");
-			clone.move(put);
-		}*/
+		//System.out.print(clone.getCurrentColor());
 		clone.move(put);
-		while(!clone.isGameOver())
+		//System.out.print("候補手 = " + clone.getMovablePos());
+		Point p = null;
+		//System.out.println();
+		while(!clone.isGameOver())//2手目以降の候補手が1手目と同じになっている
 		{
-			/*System.out.printf("%2d ",clone.getCurrentColor());
-			if((all_playouts > 4)&&(number < 10))
+			number++;			  //2手目以降に手番が入れ替わってない可能性が高い
+			//System.out.print("HELLO");//loopに入ってるか確認用
+			/*if((number == 0) && (clone.CurrentColor == -1))//手番が黒からじゃなければ交代
 			{
-				System.out.println();
+				clone.CurrentColor = -clone.CurrentColor;
+			}
+			if(number ==1)
+			{
 				for(int d = 0; d < 10; d++)
 				{
 					for(int e = 0; e < 10; e++)
@@ -140,21 +154,8 @@ class MonteCalroAI extends AI3 implements Cloneable
 					}
 					System.out.println();
 				}
+				System.out.println();
 			}*/
-			number++;
-			if(movables.isEmpty())
-			{
-				clone.pass();
-			}
-			if(movables.size() == 1)
-			{
-				clone.move((Point) movables.get(0));
-			/*	if((all_playouts > 4)&&(number < 10))
-				{
-					System.out.print((Point) movables.get(0) + ",");
-				}*/
-			}
-			Point p = null;
 			if(movables.size() >= 2)
 			{
 				int x = 0,y = 0;
@@ -165,26 +166,50 @@ class MonteCalroAI extends AI3 implements Cloneable
 					Random value2 = new Random();
 					disc.x = value1.nextInt(8) + 1;
 					disc.y = value2.nextInt(8) + 1;
-					if(clone.checkMobility(disc) == clone.NONE)	continue;//打てる手が無ければ次の座標を調べる(多分これで良い)
+					if(clone.checkMobility(disc) == clone.NONE)	continue;
 					clone.move(disc);
-					/*if((all_playouts > 4)&&(number < 10))
+				//	System.out.print(disc + ",");
+					/*if(all_playouts > 4)
 					{
-						System.out.print(disc + ",");
+						System.out.println(disc);
 					}*/
 					break;
 				}
 			}
+			if(movables.isEmpty())
+			{
+				clone.pass();
+			}
+			if(movables.size() == 1)
+			{
+				clone.move((Point) movables.get(0));
+				/*if(all_playouts > 4)
+				{
+					System.out.println(movables.get(0));
+				}*/
+			}
+		//	Point p = null;
+			//System.out.print("候補手 = " + clone.getMovablePos());
+			/*if((number < 5) && (all_playouts > 4))
+			{
+				System.out.print("手番 = " + clone.getCurrentColor());
+			}*/
 		}
 		System.out.println();
-		System.out.print("黒:" + clone.countDisc(Disc.BLACK) + "白:" + clone.countDisc(Disc.WHITE) + " ");
-		difference[num] = (clone.countDisc(Disc.BLACK) + 2) - (clone.countDisc(Disc.WHITE) + 2);
+		/*for(int d = 0; d < 10; d++)
+		{
+			for(int e = 0; e < 10; e++)
+			{
+				System.out.printf("%2d ",clone.RawBoard[e][d]);
+			}
+			System.out.println();
+		}*/
+		//System.out.println("Turns = " + clone.Turns);
+		difference[num] = clone.countDisc(Disc.BLACK) - clone.countDisc(Disc.WHITE);
 		System.out.print("石差 = " + difference[num] + ", " + "手数計 = " + number);
 		if(difference[num] > 0)//黒が勝っていれば1
 		{
-			if((number % 2 == 1)&&(number < 60))//本来の手数でなければ無視
-			{
-				win = 1;
-			}
+			 win = 1;
 		}
 		return win;
 	}

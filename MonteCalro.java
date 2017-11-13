@@ -116,6 +116,7 @@ class MonteCalroAI extends AI3 implements Cloneable
 		total_turn = board.Turns;
 		while(59 - total_turn != number)
 		{
+			movables = book.find(clone);
 			switch(movables.size())
 			{
 				case 0:
@@ -123,6 +124,18 @@ class MonteCalroAI extends AI3 implements Cloneable
 					break;
 				case 1:
 					clone.move((Point) movables.get(0));
+					//if((number + 1 == 59 - total_turn))
+					//{
+						/*System.out.println((Point) movables.get(0));
+						for(int d = 0; d < 10; d++)
+						{
+							for(int e = 0; e < 10; e++)
+							{
+								System.out.printf("%2d ",clone.RawBoard[e][d]);
+							}
+							System.out.println();
+						}*/
+					//}
 					break;
 				default:
 					 	x = 0;
@@ -136,16 +149,28 @@ class MonteCalroAI extends AI3 implements Cloneable
 							disc.y = value2.nextInt(8) + 1;
 							if(clone.checkMobility(disc) == clone.NONE)	continue;
 							clone.move(disc);
+							//if((number + 1 == 59 - total_turn))
+							//{
+								/*System.out.println(disc);
+								for(int d = 0; d < 10; d++)
+								{
+									for(int e = 0; e < 10; e++)
+									{
+										System.out.printf("%2d ",clone.RawBoard[e][d]);
+									}
+									System.out.println();
+								}*/
+							//}
 							break;
 						}
 					break;
 			}
 			number++;
-			System.out.print(number + ",");
+			//System.out.print(number + ",");
 		}
 		difference[num] = clone.countDisc(Disc.BLACK) - clone.countDisc(Disc.WHITE);
 		System.out.print("石差 = " + difference[num] + ", " + "手数計 = " + number);
-		if(difference[num] > 0)//黒が勝っていれば1
+		if(difference[num] >= 0)//黒が勝っていれば1
 		{
 			 win = 1;
 		}

@@ -1,11 +1,4 @@
-tomoya様
+<h1>README</h1>
 
-こんにちは Yahoo!知恵袋　で長々とお世話になりましたSHINE(sakago_2204)です。
-
-とりあえず exchange.docx というファイルを作っておきましたので、 今後はこちらのファイルを編集しながらやり取りしましょう！
-
-以上、よろしくお願いいたします。
-
-
-これを見たら exchange.dox を編集してください
-その後、知恵袋で返信ください
+<h2>Welcome to Chiebukuro group !!</h2>
+<p>this is a readme</p>
